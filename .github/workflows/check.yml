@@ -22,7 +22,7 @@ jobs:
       - name: System libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpulse-dev libasound2-dev libgl1-mesa-dev libxkbcommon-dev
+          sudo apt-get install -y libpulse-dev libasound2-dev libgl1-mesa-dev libxkbcommon-dev lld
       - uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}

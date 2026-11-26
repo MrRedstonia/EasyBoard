@@ -35,7 +35,7 @@ jobs:
   macos:
     # one universal app for Apple Silicon and Intel Macs (the Intel half is cross-compiled)
     needs: version
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
@@ -114,7 +114,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libpulse-dev libasound2-dev libgl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 \
-            libxcb-cursor0 libdbus-1-dev libfuse2 rpm ruby ruby-dev build-essential nasm pkg-config
+            libxcb-cursor0 libdbus-1-dev libfuse2 rpm ruby ruby-dev build-essential nasm pkg-config lld
           sudo gem install --no-document fpm
       - uses: jurplel/install-qt-action@v4
         with:

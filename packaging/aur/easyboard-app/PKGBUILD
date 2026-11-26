@@ -8,7 +8,7 @@ arch=('x86_64' 'aarch64')
 url='https://github.com/MrRedstonia/EasyBoard'
 license=('MIT')
 depends=('qt6-base' 'qt6-declarative' 'qt6-svg' 'libpulse' 'alsa-lib' 'libglvnd' 'libxkbcommon')
-makedepends=('cargo' 'clang')
+makedepends=('cargo' 'clang' 'lld')
 optdepends=('ffmpeg: save sounds as MP3, OGG, FLAC, Opus or M4A'
             'pipewire-pulse: virtual microphone inputs on PipeWire systems'
             'qt6-imageformats: WebP pictures'
