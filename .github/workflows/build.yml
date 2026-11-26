@@ -46,7 +46,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           cache: true
-      - uses: actions/cache@v6
+      - uses: actions/cache/restore@v6
         id: ffmpeg
         with:
           path: ffmpeg-out
@@ -58,6 +58,11 @@ jobs:
           command -v pkg-config || brew install pkgconf
           packaging/ffmpeg/build-ffmpeg.sh ffmpeg-out/ffmpeg-arm64 arm64
           packaging/ffmpeg/build-ffmpeg.sh ffmpeg-out/ffmpeg-x86_64 x86_64
+      - uses: actions/cache/save@v6
+        if: steps.ffmpeg.outputs.cache-hit != 'true'
+        with:
+          path: ffmpeg-out
+          key: ffmpeg-macos-${{ hashFiles('packaging/ffmpeg/build-ffmpeg.sh') }}
       - name: Build EasyBoard.app and .dmg
         run: packaging/macos/build-app.sh ffmpeg-out/ffmpeg-arm64 ffmpeg-out/ffmpeg-x86_64 "$QT_ROOT_DIR"
       - uses: actions/upload-artifact@v7
@@ -77,23 +82,28 @@ jobs:
           version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_64
           cache: true
-      - uses: actions/cache@v6
+      - uses: actions/cache/restore@v6
         id: ffmpeg
         with:
           path: ffmpeg-out
-          key: ffmpeg-windows-${{ hashFiles('packaging/ffmpeg/build-ffmpeg.sh') }}
+          key: ffmpeg-windows-ucrt64-${{ hashFiles('packaging/ffmpeg/build-ffmpeg.sh') }}
       - uses: msys2/setup-msys2@v2
         if: steps.ffmpeg.outputs.cache-hit != 'true'
         with:
-          msystem: MINGW64
+          msystem: UCRT64
           update: false
           install: >-
-            mingw-w64-x86_64-gcc mingw-w64-x86_64-nasm mingw-w64-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-nasm mingw-w64-ucrt-x86_64-pkgconf
             make diffutils tar xz curl
       - name: Build ffmpeg
         if: steps.ffmpeg.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: packaging/ffmpeg/build-ffmpeg.sh ffmpeg-out/ffmpeg.exe
+      - uses: actions/cache/save@v6
+        if: steps.ffmpeg.outputs.cache-hit != 'true'
+        with:
+          path: ffmpeg-out
+          key: ffmpeg-windows-ucrt64-${{ hashFiles('packaging/ffmpeg/build-ffmpeg.sh') }}
       - name: Build the installer
         shell: pwsh
         run: .\packaging\windows\build-installer.ps1 -QtBin "$env:QT_ROOT_DIR\bin" -Ffmpeg "$PWD\ffmpeg-out\ffmpeg.exe"
@@ -122,7 +132,7 @@ jobs:
           # WebP and other picture formats
           modules: qtimageformats
           cache: true
-      - uses: actions/cache@v6
+      - uses: actions/cache/restore@v6
         id: ffmpeg
         with:
           path: ffmpeg-out
@@ -130,6 +140,11 @@ jobs:
       - name: Build ffmpeg
         if: steps.ffmpeg.outputs.cache-hit != 'true'
         run: packaging/ffmpeg/build-ffmpeg.sh ffmpeg-out/ffmpeg
+      - uses: actions/cache/save@v6
+        if: steps.ffmpeg.outputs.cache-hit != 'true'
+        with:
+          path: ffmpeg-out
+          key: ffmpeg-linux-${{ hashFiles('packaging/ffmpeg/build-ffmpeg.sh') }}
       - name: Build
         run: |
           export QMAKE="$QT_ROOT_DIR/bin/qmake"

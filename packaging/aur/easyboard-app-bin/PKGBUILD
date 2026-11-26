@@ -7,7 +7,8 @@ pkgdesc='Cross-platform soundboard with a virtual microphone input (prebuilt bin
 arch=('x86_64')
 url='https://github.com/MrRedstonia/EasyBoard'
 license=('MIT')
-depends=('libpulse' 'libglvnd' 'libxkbcommon' 'alsa-lib')
+# libpulse also brings pactl and parec (virtual inputs, App routing); the rest is for the bundled Qt
+depends=('libpulse' 'libglvnd' 'libxkbcommon' 'fontconfig' 'freetype2' 'libx11' 'libxcb' 'hicolor-icon-theme')
 optdepends=('pipewire-pulse: virtual microphone inputs on PipeWire systems')
 provides=('easyboard-app')
 conflicts=('easyboard' 'easyboard-app')
