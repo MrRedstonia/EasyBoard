@@ -1,12 +1,12 @@
 //! Release notes shown in Settings > About. They come from the project's GitHub Releases; the copy
 //! fetched last is kept in the config folder. Until the first successful fetch (or when offline from
-//! the start) the notes shipped with the app (RELEASE_NOTES.md) are shown.
+//! the start) the notes shipped with the app (.github/RELEASE_NOTES.md) are shown.
 
 use parking_lot::Mutex;
 use std::time::Duration;
 
 const REPO: &str = "MrRedstonia/EasyBoard";
-static BUNDLED: &str = include_str!("../RELEASE_NOTES.md");
+static BUNDLED: &str = include_str!("../.github/RELEASE_NOTES.md");
 static FETCHING: Mutex<bool> = Mutex::new(false);
 
 fn cache_path() -> std::path::PathBuf {

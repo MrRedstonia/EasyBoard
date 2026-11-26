@@ -25,9 +25,9 @@ It is our own minimal build of FFmpeg 7.1.1, made the same way for every platfor
 --enable-libmp3lame --enable-libvorbis --enable-libopus
 ```
 
-- Source: https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.xz. The build steps are in `.github/workflows/build.yml`.
+- Source: https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.xz. The build script is [`packaging/ffmpeg/build-ffmpeg.sh`](packaging/ffmpeg/build-ffmpeg.sh).
 - License text: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
-- Statically linked inside it: LAME (LGPL v2+), libvorbis and libogg (BSD-3-Clause), libopus (BSD-3-Clause).
+- Statically linked inside it: LAME 3.100 (LGPL v2+), libogg 1.3.5 and libvorbis 1.3.7 (BSD-3-Clause), libopus 1.5.2 (BSD-3-Clause).
 
 FFmpeg is a trademark of Fabrice Bellard. EasyBoard is not affiliated with or endorsed by the FFmpeg project.
 

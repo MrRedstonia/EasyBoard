@@ -1,7 +1,8 @@
 <#
  Builds the Windows installer.
 
- Needs: Rust, Qt 6 (msvc2022_64), Inno Setup 6.6 or newer (ISCC.exe) and a minimal ffmpeg.exe (LGPL build).
+ Needs: Rust, Qt 6 (msvc2022_64), Inno Setup 6.6 or newer (ISCC.exe) and the minimal LGPL ffmpeg.exe
+ (build it with packaging/ffmpeg/build-ffmpeg.sh in an MSYS2 MINGW64 shell).
 
  Usage (PowerShell, from the project root):
    .\packaging\windows\build-installer.ps1 -QtBin C:\Qt\6.12.0\msvc2022_64\bin `

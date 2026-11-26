@@ -22,7 +22,7 @@ sha256sums=('SKIP') # run `updpkgsums` before publishing
 prepare() {
   cd "EasyBoard-$pkgver"
   export RUSTUP_TOOLCHAIN=stable
-  cargo fetch --target "$(rustc -vV | sed -n 's/host: //p')"
+  cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
 }
 
 build() {
@@ -30,7 +30,7 @@ build() {
   export RUSTUP_TOOLCHAIN=stable
   export CARGO_TARGET_DIR=target
   export QMAKE=/usr/bin/qmake6
-  cargo build --release
+  cargo build --frozen --release
 }
 
 package() {

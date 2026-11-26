@@ -5,7 +5,8 @@
 # Needs: Rust, Xcode command line tools, Qt 6 for macOS (the official builds, e.g. from the Qt
 # installer or aqtinstall, contain both CPU types) and ffmpeg: either one universal binary, or one
 # arm64 and one x86_64 binary (they are joined into one). It must be a self-contained build, not
-# Homebrew's (that one needs Homebrew's libraries on the Mac it runs on).
+# Homebrew's (that one needs Homebrew's libraries on the Mac it runs on): packaging/ffmpeg/build-ffmpeg.sh
+# makes the right one (run it once with arm64 and once with x86_64).
 #
 # Usage (from anywhere):
 #   packaging/macos/build-app.sh [<ffmpeg> [<ffmpeg for the other CPU>]] [/path/to/Qt/6.8.3/macos]

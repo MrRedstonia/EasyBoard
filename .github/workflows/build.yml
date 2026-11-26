@@ -1,9 +1,10 @@
 # Builds EasyBoard for every platform on GitHub's own machines:
 #   Windows installer (.exe), macOS (one .dmg for Apple Silicon and Intel),
-#   Linux (AppImage, .deb, .rpm and .tar.gz).
+#   Linux (AppImage, .tar.gz, .deb and .rpm).
 #
 # Start it by hand: repo > Actions > "Build" > "Run workflow".
-# Or push a tag such as v0.3.0: then the finished files are also attached to a GitHub Release.
+# Or push a tag such as v0.3.0 (it must match the version in Cargo.toml): then the finished files are
+# attached to a GitHub Release with .github/RELEASE_NOTES.md as its text, and the AUR packages are updated.
 name: Build
 
 on:
@@ -13,15 +14,27 @@ on:
 
 env:
   QT_VERSION: "6.8.3"
-  # ffmpeg is only a helper for saving MP3/OGG/FLAC/Opus/M4A. Change these links if one stops working.
-  FFMPEG_MAC_X64_URL: "https://evermeet.cx/ffmpeg/ffmpeg-9.1.zip"
-  FFMPEG_MAC_ARM_URL: "https://www.osxexperts.net/ffmpeg91arm.zip"
-  FFMPEG_WIN_URL: "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-lgpl.zip"
-  FFMPEG_LINUX_URL: "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-lgpl.tar.xz"
 
 jobs:
+  version:
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        name: Version (the tag must match Cargo.toml)
+        run: |
+          v=$(grep -m1 '^version' Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "${GITHUB_REF_NAME#v}" != "$v" ]; then
+            echo "::error::The tag $GITHUB_REF_NAME doesn't match the version in Cargo.toml ($v)."
+            exit 1
+          fi
+
   macos:
     # one universal app for Apple Silicon and Intel Macs (the Intel half is cross-compiled)
+    needs: version
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
@@ -33,25 +46,27 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           cache: true
-      - name: Download ffmpeg (Apple Silicon and Intel)
+      - uses: actions/cache@v4
+        id: ffmpeg
+        with:
+          path: ffmpeg-out
+          key: ffmpeg-macos-${{ hashFiles('packaging/ffmpeg/build-ffmpeg.sh') }}
+      - name: Build ffmpeg (Apple Silicon and Intel)
+        if: steps.ffmpeg.outputs.cache-hit != 'true'
         run: |
-          for arch in arm64 x86_64; do
-            if [ "$arch" = arm64 ]; then URL="${{ env.FFMPEG_MAC_ARM_URL }}"; else URL="${{ env.FFMPEG_MAC_X64_URL }}"; fi
-            mkdir -p ff/$arch
-            curl -L --fail -o ff/$arch.zip "$URL"
-            unzip -o ff/$arch.zip -d ff/$arch
-            cp "$(find ff/$arch -name ffmpeg -type f | head -n1)" ff/ffmpeg-$arch
-            chmod +x ff/ffmpeg-$arch
-            lipo -archs ff/ffmpeg-$arch
-          done
+          brew install nasm
+          command -v pkg-config || brew install pkgconf
+          packaging/ffmpeg/build-ffmpeg.sh ffmpeg-out/ffmpeg-arm64 arm64
+          packaging/ffmpeg/build-ffmpeg.sh ffmpeg-out/ffmpeg-x86_64 x86_64
       - name: Build EasyBoard.app and .dmg
-        run: packaging/macos/build-app.sh ff/ffmpeg-arm64 ff/ffmpeg-x86_64 "$QT_ROOT_DIR"
+        run: packaging/macos/build-app.sh ffmpeg-out/ffmpeg-arm64 ffmpeg-out/ffmpeg-x86_64 "$QT_ROOT_DIR"
       - uses: actions/upload-artifact@v4
         with:
           name: EasyBoard-macOS-universal
           path: dist/*.dmg
 
   windows:
+    needs: version
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
@@ -62,16 +77,26 @@ jobs:
           version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_64
           cache: true
-      - name: Download ffmpeg
-        shell: pwsh
-        run: |
-          Invoke-WebRequest $env:FFMPEG_WIN_URL -OutFile ff.zip
-          Expand-Archive ff.zip -DestinationPath ff
-          $exe = Get-ChildItem -Recurse ff -Filter ffmpeg.exe | Select-Object -First 1
-          Copy-Item $exe.FullName ffmpeg.exe
+      - uses: actions/cache@v4
+        id: ffmpeg
+        with:
+          path: ffmpeg-out
+          key: ffmpeg-windows-${{ hashFiles('packaging/ffmpeg/build-ffmpeg.sh') }}
+      - uses: msys2/setup-msys2@v2
+        if: steps.ffmpeg.outputs.cache-hit != 'true'
+        with:
+          msystem: MINGW64
+          update: false
+          install: >-
+            mingw-w64-x86_64-gcc mingw-w64-x86_64-nasm mingw-w64-x86_64-pkgconf
+            make diffutils tar xz curl
+      - name: Build ffmpeg
+        if: steps.ffmpeg.outputs.cache-hit != 'true'
+        shell: msys2 {0}
+        run: packaging/ffmpeg/build-ffmpeg.sh ffmpeg-out/ffmpeg.exe
       - name: Build the installer
         shell: pwsh
-        run: .\packaging\windows\build-installer.ps1 -QtBin "$env:QT_ROOT_DIR\bin" -Ffmpeg "$PWD\ffmpeg.exe"
+        run: .\packaging\windows\build-installer.ps1 -QtBin "$env:QT_ROOT_DIR\bin" -Ffmpeg "$PWD\ffmpeg-out\ffmpeg.exe"
       - uses: actions/upload-artifact@v4
         with:
           name: EasyBoard-Windows
@@ -79,6 +104,7 @@ jobs:
 
   linux:
     # the oldest Ubuntu GitHub offers: the result then runs on most distributions
+    needs: version
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -88,26 +114,30 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libpulse-dev libasound2-dev libgl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 \
-            libxcb-cursor0 libdbus-1-dev libfuse2 rpm ruby ruby-dev build-essential
+            libxcb-cursor0 libdbus-1-dev libfuse2 rpm ruby ruby-dev build-essential nasm pkg-config
           sudo gem install --no-document fpm
       - uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
+          # WebP and other picture formats
+          modules: qtimageformats
           cache: true
+      - uses: actions/cache@v4
+        id: ffmpeg
+        with:
+          path: ffmpeg-out
+          key: ffmpeg-linux-${{ hashFiles('packaging/ffmpeg/build-ffmpeg.sh') }}
+      - name: Build ffmpeg
+        if: steps.ffmpeg.outputs.cache-hit != 'true'
+        run: packaging/ffmpeg/build-ffmpeg.sh ffmpeg-out/ffmpeg
       - name: Build
         run: |
           export QMAKE="$QT_ROOT_DIR/bin/qmake"
-          cargo build --release
-      - name: Download ffmpeg
-        run: |
-          curl -L --fail -o ff.tar.xz "$FFMPEG_LINUX_URL"
-          mkdir ff && tar -xf ff.tar.xz -C ff
-          cp "$(find ff -name ffmpeg -type f | head -n1)" ffmpeg
-          chmod +x ffmpeg
+          cargo build --release --locked
       - name: Package (AppImage, tar.gz, deb, rpm)
         run: |
           export QMAKE="$QT_ROOT_DIR/bin/qmake"
-          packaging/linux/package.sh "$PWD/ffmpeg"
+          packaging/linux/package.sh "$PWD/ffmpeg-out/ffmpeg"
       - uses: actions/upload-artifact@v4
         with:
           name: EasyBoard-Linux
@@ -118,17 +148,52 @@ jobs:
             dist/*.rpm
 
   release:
-    # Only when you pushed a tag like v0.3.0: attaches all downloads to a GitHub Release.
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [macos, windows, linux]
+    # only for a tag like v0.3.0: a GitHub Release with every download
+    if: github.ref_type == 'tag'
+    needs: [version, macos, windows, linux]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: out
           merge-multiple: true
+      - name: Release text
+        # the release's title already says "EasyBoard <version>", so the file's own heading is left out
+        run: sed '1{/^## /d}' .github/RELEASE_NOTES.md > notes.md
       - uses: softprops/action-gh-release@v2
         with:
+          name: EasyBoard ${{ needs.version.outputs.version }}
+          body_path: notes.md
           files: out/*
+
+  aur:
+    # after the release: updates easyboard-app and easyboard-app-bin on the AUR. Needs the secret
+    # AUR_SSH_KEY (a private SSH key whose public half is in your AUR account), and a public repo,
+    # since the AUR packages download from it.
+    if: github.ref_type == 'tag' && !github.event.repository.private
+    needs: [version, release]
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        package: [easyboard-app, easyboard-app-bin]
+    env:
+      AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set the version
+        run: |
+          sed -i "s/^pkgver=.*/pkgver=${{ needs.version.outputs.version }}/; s/^pkgrel=.*/pkgrel=1/" \
+            packaging/aur/${{ matrix.package }}/PKGBUILD
+      - uses: KSXGitHub/github-actions-deploy-aur@v4.2.0
+        if: env.AUR_SSH_KEY != ''
+        with:
+          pkgname: ${{ matrix.package }}
+          pkgbuild: packaging/aur/${{ matrix.package }}/PKGBUILD
+          updpkgsums: true
+          commit_username: MrRedstonia
+          commit_email: contact@mrredstonia.com
+          ssh_private_key: ${{ secrets.AUR_SSH_KEY }}
+          commit_message: Update to ${{ needs.version.outputs.version }}

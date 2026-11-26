@@ -1,0 +1,33 @@
+# A quick check that EasyBoard still builds (on Linux), for every push to main and every pull request.
+# Changes that only touch documentation or the README pictures are skipped.
+name: Check
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**.md", ".github/readme/**"]
+  pull_request:
+    paths-ignore: ["**.md", ".github/readme/**"]
+
+env:
+  QT_VERSION: "6.8.3"
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: System libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpulse-dev libasound2-dev libgl1-mesa-dev libxkbcommon-dev
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          cache: true
+      - name: Build
+        run: |
+          export QMAKE="$QT_ROOT_DIR/bin/qmake"
+          cargo build --locked
