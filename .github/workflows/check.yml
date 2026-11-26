@@ -1,13 +1,14 @@
 # A quick check that EasyBoard still builds (on Linux), for every push to main and every pull request.
-# Changes that only touch documentation or the README pictures are skipped.
+# Changes that only touch documentation, the README pictures or the packaging scripts are skipped
+# (the Build workflow covers the packaging).
 name: Check
 
 on:
   push:
     branches: [main]
-    paths-ignore: ["**.md", ".github/readme/**"]
+    paths-ignore: ["**.md", ".github/readme/**", "packaging/**"]
   pull_request:
-    paths-ignore: ["**.md", ".github/readme/**"]
+    paths-ignore: ["**.md", ".github/readme/**", "packaging/**"]
 
 env:
   QT_VERSION: "6.8.3"
