@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=EasyBoard
+Comment=Soundboard with a virtual microphone input
+Exec=easyboard
+Icon=easyboard
+Terminal=false
+Categories=AudioVideo;Audio;
+StartupWMClass=easyboard

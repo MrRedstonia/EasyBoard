@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Liquid Glass ("clear"): the background shows through sharp and un-tinted; only along the edges it
+     is bent and brightened like light through the rim of a lens. No white borders. Panels blur and magnify the moving colors behind them, with a
+     glossy rim and a bright inner edge. -->
+<theme name="Liquid Glass" author="EasyBoard" version="3.0"
+       description="Clear frosted glass with a floating dock: panels blur and bend the soft shapes drifting behind them, with glossy rims and a gentle shine.">
+  <colors dark="false"
+          accent="#ffffff" highlightedText="#141416"
+          window="#e9ebef" background="#e4e6ea" text="#141416"
+          base="#d9ffffff" button="#b3ffffff" tooltip="#f2ffffff"
+          sidebar="#00ffffff" panel="#14ffffff" board="#00ffffff"
+          control="#0dffffff" controlBorder="#00ffffff"
+          border="#00ffffff" selection="#4dffffff" menu="#26ffffff" glyph="#6b707a"/>
+  <background mode="all"/>
+  <!-- the frosted glass under the sidebar, the side panel, the big boxes and the menus -->
+  <glass blur="0" tint="#00ffffff" highlight="#12ffffff" shade="#00000000"
+         saturation="0" brightness="0.02" lens="1.0"
+         refraction="16" edgeScale="0.82" edgeBrightness="0.04" edgeSaturation="-0.35"/>
+  <!-- no sidebar: a floating glass dock at the bottom. White glass for hover and the open page, no color. -->
+  <sidebar position="bottom" iconColor="#6b707a" activeColor="#80ffffff" hoverColor="#59ffffff" hoverScale="1.18"
+           tooltips="false" slide="true" labels="false"/>
+  <hide element="board.colors"/>
+  <hide element="editor.color"/>
+  <hide element="sidebar.toggle"/>
+  <!-- round corners; the search in the middle; Loop / Stop down next to the dock -->
+  <layout radius="26" search="center" boardButtons="dock" pageWidth="full" pageAlign="center"/>
+  <!-- round, raised glass for every control: frosted glass underneath, they grow under the mouse and sink
+       when pressed, and menus fade and grow in. Soft shadows, light on top, rims that pick up the colors behind. -->
+  <controls radius="999" glass="true" hoverScale="1.04" pressScale="0.96" menuAnimation="true" tooltips="false"/>
+  <depth shadow="0.2" sheen="0" waveShadow="0.75"/>
+
+  <!-- every tile the same clear glass; no pencil, they just grow a little under the mouse -->
+  <tiles radius="24" uniform="true" glass="true" align="center" hoverScale="1.04" editButton="false" selectButton="false"/>
+  <tilecolor name="default"    primary="#00ffffff" secondary="#0affffff" text="#141416" progress="#9aa0aa"
+             label="#4dffffff" chip="#8c7a808c"/>
+  <tilecolor name="red"        primary="#b3ff5a6e" secondary="#4dffffff" text="#ffffff" progress="#ffffff"/>
+  <tilecolor name="orange"     primary="#b3ff9447" secondary="#4dffffff" text="#ffffff" progress="#ffffff"/>
+  <tilecolor name="yellow"     primary="#b3ffd23c" secondary="#4dffffff" text="#3a2a00" progress="#3a2a00"/>
+  <tilecolor name="green"      primary="#b334c77b" secondary="#4dffffff" text="#ffffff" progress="#ffffff"/>
+  <tilecolor name="teal"       primary="#b31fb5a8" secondary="#4dffffff" text="#ffffff" progress="#ffffff"/>
+  <tilecolor name="blue"       primary="#b33d7cf5" secondary="#4dffffff" text="#ffffff" progress="#ffffff"/>
+  <tilecolor name="purple"     primary="#b39a62f0" secondary="#4dffffff" text="#ffffff" progress="#ffffff"/>
+  <tilecolor name="magenta"    primary="#b3d65ad8" secondary="#4dffffff" text="#ffffff" progress="#ffffff"/>
+  <tilecolor name="pink"       primary="#b3ff6fae" secondary="#4dffffff" text="#ffffff" progress="#ffffff"/>
+  <tilecolor name="lightgreen" primary="#b37ddc9b" secondary="#4dffffff" text="#0f2a1a" progress="#0f2a1a"/>
+  <tilecolor name="lightblue"  primary="#b364c2ff" secondary="#4dffffff" text="#ffffff" progress="#ffffff"/>
+
+  <element slot="background" file="Blobs.qml"/>
+  <!-- sound IDs on little raised glass pills -->
+  <replace part="soundId" file="GlassId.qml"/>
+</theme>

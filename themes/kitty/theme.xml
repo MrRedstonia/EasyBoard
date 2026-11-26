@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Kitty: soft pinks, little cats, bows and paw prints. -->
+<theme name="Kitty" author="EasyBoard" version="1.0"
+       description="Soft pinks with little cats, bows, hearts and paw prints floating by.">
+  <colors dark="false"
+          accent="#ff5fa2" highlightedText="#ffffff"
+          window="#ffe4ef" background="#ffe4ef" text="#5a2340"
+          base="#fff5f9" button="#ffd1e3" tooltip="#fff5f9"
+          sidebar="#ffcfe2" panel="#f2fff0f6" board="#b3fff3f8" control="#ffffd6e7"/>
+  <background mode="behind"/>
+  <sidebar radius="16"/>
+  <layout radius="22"/>
+  <!-- pastel tiles with dark plum text; a little cat instead of the ♪ -->
+  <tiles radius="22" glyphFile="cat.svg" glyphSize="64" glyphOpacity="0.9"/>
+  <tilecolor name="default"    primary="#fff0f6" secondary="#ffe0ec" text="#5a2340" progress="#ff5fa2"/>
+  <tilecolor name="red"        primary="#ffb7bd" secondary="#ffa0a8" text="#5a2340" progress="#e0456a"/>
+  <tilecolor name="orange"     primary="#ffd3b0" secondary="#ffc196" text="#5a2340" progress="#e57a3c"/>
+  <tilecolor name="yellow"     primary="#fff1b0" secondary="#ffe78a" text="#5a2340" progress="#d9a500"/>
+  <tilecolor name="green"      primary="#c4eecf" secondary="#aae3bb" text="#3d2235" progress="#3aa76a"/>
+  <tilecolor name="teal"       primary="#bdece6" secondary="#a1e0d7" text="#3d2235" progress="#1f9c8c"/>
+  <tilecolor name="blue"       primary="#c2dafe" secondary="#a8c9fd" text="#3d2235" progress="#4a7fe0"/>
+  <tilecolor name="purple"     primary="#ddc9ff" secondary="#cdb0ff" text="#4a2a5e" progress="#8a5ce0"/>
+  <tilecolor name="magenta"    primary="#f5c8fd" secondary="#ecaefa" text="#5a2350" progress="#c04acb"/>
+  <tilecolor name="pink"       primary="#ffcce2" secondary="#ffb3d3" text="#5a2340" progress="#ff5fa2"/>
+  <tilecolor name="lightgreen" primary="#d8f6cf" secondary="#c3efb6" text="#3d2235" progress="#4db35a"/>
+  <tilecolor name="lightblue"  primary="#cdeeff" secondary="#b1e4ff" text="#3d2235" progress="#3aa0d8"/>
+
+  <!-- a heart-shaped loading spinner, and the sound IDs on dark-pink hearts -->
+  <replace part="spinner" file="HeartSpinner.qml"/>
+  <replace part="soundId" file="HeartId.qml"/>
+
+  <icon name="home" file="paw.svg"/>
+  <icon name="settings" file="bow.svg"/>
+  <element slot="background" file="Background.qml"/>
+  <element slot="boardBackground" file="BoardPattern.qml"/>
+</theme>

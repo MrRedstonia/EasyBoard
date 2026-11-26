@@ -1,0 +1,134 @@
+# Builds EasyBoard for every platform on GitHub's own machines:
+#   Windows installer (.exe), macOS (one .dmg for Apple Silicon and Intel),
+#   Linux (AppImage, .deb, .rpm and .tar.gz).
+#
+# Start it by hand: repo > Actions > "Build" > "Run workflow".
+# Or push a tag such as v0.3.0: then the finished files are also attached to a GitHub Release.
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+env:
+  QT_VERSION: "6.8.3"
+  # ffmpeg is only a helper for saving MP3/OGG/FLAC/Opus/M4A. Change these links if one stops working.
+  FFMPEG_MAC_X64_URL: "https://evermeet.cx/ffmpeg/ffmpeg-9.1.zip"
+  FFMPEG_MAC_ARM_URL: "https://www.osxexperts.net/ffmpeg91arm.zip"
+  FFMPEG_WIN_URL: "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-lgpl.zip"
+  FFMPEG_LINUX_URL: "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-lgpl.tar.xz"
+
+jobs:
+  macos:
+    # one universal app for Apple Silicon and Intel Macs (the Intel half is cross-compiled)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin, x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          cache: true
+      - name: Download ffmpeg (Apple Silicon and Intel)
+        run: |
+          for arch in arm64 x86_64; do
+            if [ "$arch" = arm64 ]; then URL="${{ env.FFMPEG_MAC_ARM_URL }}"; else URL="${{ env.FFMPEG_MAC_X64_URL }}"; fi
+            mkdir -p ff/$arch
+            curl -L --fail -o ff/$arch.zip "$URL"
+            unzip -o ff/$arch.zip -d ff/$arch
+            cp "$(find ff/$arch -name ffmpeg -type f | head -n1)" ff/ffmpeg-$arch
+            chmod +x ff/ffmpeg-$arch
+            lipo -archs ff/ffmpeg-$arch
+          done
+      - name: Build EasyBoard.app and .dmg
+        run: packaging/macos/build-app.sh ff/ffmpeg-arm64 ff/ffmpeg-x86_64 "$QT_ROOT_DIR"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EasyBoard-macOS-universal
+          path: dist/*.dmg
+
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          arch: win64_msvc2022_64
+          cache: true
+      - name: Download ffmpeg
+        shell: pwsh
+        run: |
+          Invoke-WebRequest $env:FFMPEG_WIN_URL -OutFile ff.zip
+          Expand-Archive ff.zip -DestinationPath ff
+          $exe = Get-ChildItem -Recurse ff -Filter ffmpeg.exe | Select-Object -First 1
+          Copy-Item $exe.FullName ffmpeg.exe
+      - name: Build the installer
+        shell: pwsh
+        run: .\packaging\windows\build-installer.ps1 -QtBin "$env:QT_ROOT_DIR\bin" -Ffmpeg "$PWD\ffmpeg.exe"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EasyBoard-Windows
+          path: dist/*-setup.exe
+
+  linux:
+    # the oldest Ubuntu GitHub offers: the result then runs on most distributions
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: System libraries and packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpulse-dev libasound2-dev libgl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 \
+            libxcb-cursor0 libdbus-1-dev libfuse2 rpm ruby ruby-dev build-essential
+          sudo gem install --no-document fpm
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          cache: true
+      - name: Build
+        run: |
+          export QMAKE="$QT_ROOT_DIR/bin/qmake"
+          cargo build --release
+      - name: Download ffmpeg
+        run: |
+          curl -L --fail -o ff.tar.xz "$FFMPEG_LINUX_URL"
+          mkdir ff && tar -xf ff.tar.xz -C ff
+          cp "$(find ff -name ffmpeg -type f | head -n1)" ffmpeg
+          chmod +x ffmpeg
+      - name: Package (AppImage, tar.gz, deb, rpm)
+        run: |
+          export QMAKE="$QT_ROOT_DIR/bin/qmake"
+          packaging/linux/package.sh "$PWD/ffmpeg"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EasyBoard-Linux
+          path: |
+            dist/*.AppImage
+            dist/*.tar.gz
+            dist/*.deb
+            dist/*.rpm
+
+  release:
+    # Only when you pushed a tag like v0.3.0: attaches all downloads to a GitHub Release.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [macos, windows, linux]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*

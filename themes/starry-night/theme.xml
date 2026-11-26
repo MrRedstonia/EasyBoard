@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Starry Night: a deep night sky with twinkling stars and the odd shooting star. -->
+<theme name="Starry Night" author="EasyBoard" version="1.0"
+       description="A deep blue night sky with twinkling stars, a shooting star now and then, and warm golden accents.">
+  <colors dark="true"
+          accent="#f2c46d" highlightedText="#1a1405"
+          window="#0b1028" background="#0b1028" text="#e8ecff"
+          base="#141a3a" button="#1b2250" tooltip="#1b2250"
+          sidebar="#b3080c1f" panel="#e60c1230" board="#59070b20" control="#33aab4ff"/>
+  <background mode="behind"/>
+  <layout radius="18"/>
+  <!-- space colors: planets, nebulae and auroras; progress in starlight gold -->
+  <tilecolor name="default"    primary="#1b2350" secondary="#121838" text="#e8ecff" progress="#f2c46d"/>
+  <tilecolor name="red"        primary="#a8323e" secondary="#6e1f33" text="#ffeef0" progress="#ffd0a0"/>
+  <tilecolor name="orange"     primary="#c0592c" secondary="#7a3320" text="#fff1e6" progress="#ffe1a8"/>
+  <tilecolor name="yellow"     primary="#c99a2e" secondary="#7d5c19" text="#fffbea" progress="#fff3c4"/>
+  <tilecolor name="green"      primary="#1f8a6e" secondary="#0f4d45" text="#e9fff8" progress="#9ff5d2"/>
+  <tilecolor name="teal"       primary="#17728f" secondary="#0c3f5a" text="#e6faff" progress="#9be6ff"/>
+  <tilecolor name="blue"       primary="#2a3f9e" secondary="#16215e" text="#eaf0ff" progress="#a9c1ff"/>
+  <tilecolor name="purple"     primary="#5b34a6" secondary="#331c66" text="#f2ebff" progress="#d4b8ff"/>
+  <tilecolor name="magenta"    primary="#8e2f94" secondary="#521a5e" text="#ffecff" progress="#f5b3ff"/>
+  <tilecolor name="pink"       primary="#b0457f" secondary="#6a2452" text="#ffeef7" progress="#ffc2e2"/>
+  <tilecolor name="lightgreen" primary="#3fa489" secondary="#1e5e52" text="#effff9" progress="#b9ffe4"/>
+  <tilecolor name="lightblue"  primary="#3f6fc4" secondary="#1f3b78" text="#eef4ff" progress="#c2dbff"/>
+  <icon name="settings" file="moon.svg"/>
+  <element slot="background" file="Sky.qml"/>
+</theme>
