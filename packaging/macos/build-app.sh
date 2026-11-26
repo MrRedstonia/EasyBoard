@@ -104,16 +104,22 @@ xattr -cr "$APP"
 codesign --force --deep --sign - "$APP"
 
 rm -f "dist/EasyBoard-$VERSION-macOS-$SUFFIX.dmg"
-# the .dmg window: EasyBoard.app next to a shortcut to Applications, to drag it onto
-DMGDIR="$(mktemp -d)/EasyBoard"
-mkdir -p "$DMGDIR"
-ditto "$APP" "$DMGDIR/EasyBoard.app"   # ditto keeps the signature and attributes intact
-ln -s /Applications "$DMGDIR/Applications"
-# hdiutil sometimes fails with "Resource busy" (e.g. while macOS scans the new files): try again
+# The .dmg window: EasyBoard.app, an arrow and a shortcut to Applications on a background picture
+# (packaging/macos/dmg). dmgbuild writes that layout without needing Finder.
+DMGBUILD="$(command -v dmgbuild || true)"
+if [ -z "$DMGBUILD" ]; then
+  VENV="$(mktemp -d)/dmgbuild"
+  python3 -m venv "$VENV"
+  "$VENV/bin/pip" install --quiet "dmgbuild>=1.6,<2"
+  DMGBUILD="$VENV/bin/dmgbuild"
+fi
+# hdiutil (used by dmgbuild) sometimes fails with "Resource busy", e.g. while macOS scans the new
+# files: try again
 for try in 1 2 3 4 5; do
-  hdiutil create -volname EasyBoard -srcfolder "$DMGDIR" -ov -format UDZO "dist/EasyBoard-$VERSION-macOS-$SUFFIX.dmg" && break
+  "$DMGBUILD" -s packaging/macos/dmg/settings.py -D app="$APP" -D dir="$PWD/packaging/macos/dmg" \
+    EasyBoard "dist/EasyBoard-$VERSION-macOS-$SUFFIX.dmg" && break
   [ "$try" = 5 ] && exit 1
-  echo "hdiutil failed, trying again in 10 seconds ($try/5)"
+  echo "making the .dmg failed, trying again in 10 seconds ($try/5)"
   sleep 10
 done
 echo "Done: $APP and dist/EasyBoard-$VERSION-macOS-$SUFFIX.dmg"
