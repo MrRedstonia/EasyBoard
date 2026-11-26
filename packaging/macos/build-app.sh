@@ -104,9 +104,14 @@ xattr -cr "$APP"
 codesign --force --deep --sign - "$APP"
 
 rm -f "dist/EasyBoard-$VERSION-macOS-$SUFFIX.dmg"
+# the .dmg window: EasyBoard.app next to a shortcut to Applications, to drag it onto
+DMGDIR="$(mktemp -d)/EasyBoard"
+mkdir -p "$DMGDIR"
+ditto "$APP" "$DMGDIR/EasyBoard.app"   # ditto keeps the signature and attributes intact
+ln -s /Applications "$DMGDIR/Applications"
 # hdiutil sometimes fails with "Resource busy" (e.g. while macOS scans the new files): try again
 for try in 1 2 3 4 5; do
-  hdiutil create -volname EasyBoard -srcfolder "$APP" -ov -format UDZO "dist/EasyBoard-$VERSION-macOS-$SUFFIX.dmg" && break
+  hdiutil create -volname EasyBoard -srcfolder "$DMGDIR" -ov -format UDZO "dist/EasyBoard-$VERSION-macOS-$SUFFIX.dmg" && break
   [ "$try" = 5 ] && exit 1
   echo "hdiutil failed, trying again in 10 seconds ($try/5)"
   sleep 10

@@ -73,7 +73,7 @@ COMMON=(-s dir -n easyboard -v "$VERSION" --license MIT --maintainer "MrRedstoni
         --description "EasyBoard - a cross-platform soundboard with a virtual microphone input"
         -C "$ROOT" .)
 # pactl and parec (virtual inputs, App routing) are in pulseaudio-utils on both
-fpm -t deb -p "dist/easyboard_${VERSION}_amd64.deb" -a amd64 -d libgl1 -d libxkbcommon0 -d libpulse0 -d pulseaudio-utils "${COMMON[@]}"
-fpm -t rpm -p "dist/easyboard-${VERSION}.x86_64.rpm" -a x86_64 -d mesa-libGL -d libxkbcommon -d pulseaudio-libs -d pulseaudio-utils "${COMMON[@]}"
+fpm -t deb -p "dist/easyboard_${VERSION}_amd64.deb" -a amd64 -d libgl1 -d libegl1 -d libfontconfig1 -d libfreetype6 -d libxkbcommon0 -d libpulse0 -d pulseaudio-utils "${COMMON[@]}"
+fpm -t rpm -p "dist/easyboard-${VERSION}.x86_64.rpm" -a x86_64 -d mesa-libGL -d libglvnd-egl -d fontconfig -d freetype -d libxkbcommon -d pulseaudio-libs -d pulseaudio-utils "${COMMON[@]}"
 
 ls -la dist
