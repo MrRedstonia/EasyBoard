@@ -268,8 +268,24 @@ Row {
 `<icon name="..." file="..."/>`, one per icon. SVGs that draw with `currentColor` are recolored to
 match the text (and to stay readable on a highlighted button); other pictures are shown as they are.
 
-Icon names: `home`, `studio`, `library`, `routing`, `themes`, `settings`, `chevron` (the sidebar arrow),
-`speaker`, `muted`, `undo`, `redo`, `backspace`, `braceopen`, `braceclose`, `revert`, `tray`.
+Use exactly these names; other names are ignored.
+
+| Name         | Icon |
+|--------------|------|
+| `home`       | Sidebar / dock: Soundboard |
+| `studio`     | Sidebar / dock: Sound editor |
+| `library`    | Sidebar / dock: Sound library |
+| `routing`    | Sidebar / dock: App routing |
+| `themes`     | Sidebar / dock: Themes |
+| `settings`   | Sidebar / dock: Settings |
+| `chevron`    | The arrow that expands the sidebar |
+| `loop`, `stop` | "Loop Sounds" and "Stop All Sounds", when they are round buttons next to a dock |
+| `speaker`, `muted` | Settings: the mute buttons of the volume sliders (sound on / muted) |
+| `undo`, `redo` | Sound editor: undo and redo |
+| `braceopen`, `braceclose` | Sound editor: make the crop start / end at the playhead |
+| `backspace`  | The "Clear" buttons (a sound's file, the Sound editor's file, the background picture) |
+| `revert`     | Sound library: revert a sound to its original version |
+| `tray`       | The tray / menu bar icon |
 
 ### `<hide>` – hide parts of the app
 `<hide element="..."/>`, one per element:
